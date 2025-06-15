@@ -1,0 +1,240 @@
+--// UI Code
+local player = game.Players.LocalPlayer
+local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+gui.Name = "CustomExecutor"
+gui.ResetOnSpawn = false
+
+-- Main Frame
+local frame = Instance.new("Frame", gui)
+frame.Name = "MainFrame"
+frame.Size = UDim2.new(0, 450, 0, 300)
+frame.Position = UDim2.new(0.5, -225, 0.5, -150)
+frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+frame.BorderSizePixel = 0
+frame.ClipsDescendants = true
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 12)
+
+-- Top Bar
+local topBar = Instance.new("Frame", frame)
+topBar.Size = UDim2.new(1, 0, 0, 30)
+topBar.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+topBar.BorderSizePixel = 0
+Instance.new("UICorner", topBar).CornerRadius = UDim.new(0, 12)
+
+-- Title
+local title = Instance.new("TextLabel", topBar)
+title.Size = UDim2.new(1, -60, 1, 0)
+title.Position = UDim2.new(0, 10, 0, 0)
+title.Text = "💻 OhioSigma Executor 💻"
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.BackgroundTransparency = 1
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.Font = Enum.Font.GothamBold
+title.TextSize = 14
+
+-- Minimize Button
+local minimize = Instance.new("TextButton", topBar)
+minimize.Size = UDim2.new(0, 25, 0, 25)
+minimize.Position = UDim2.new(1, -60, 0.5, -12)
+minimize.Text = ""
+minimize.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+minimize.BorderSizePixel = 0
+Instance.new("UICorner", minimize).CornerRadius = UDim.new(1, 0)
+
+local minIcon = Instance.new("TextLabel", minimize)
+minIcon.Size = UDim2.new(1, 0, 1, 0)
+minIcon.BackgroundTransparency = 1
+minIcon.Text = "-"
+minIcon.Font = Enum.Font.GothamBold
+minIcon.TextColor3 = Color3.fromRGB(255, 255, 255)
+minIcon.TextSize = 18
+
+-- Close Button
+local close = Instance.new("TextButton", topBar)
+close.Size = UDim2.new(0, 25, 0, 25)
+close.Position = UDim2.new(1, -30, 0.5, -12)
+close.Text = ""
+close.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
+close.BorderSizePixel = 0
+Instance.new("UICorner", close).CornerRadius = UDim.new(1, 0)
+
+local closeIcon = Instance.new("TextLabel", close)
+closeIcon.Size = UDim2.new(1, 0, 1, 0)
+closeIcon.BackgroundTransparency = 1
+closeIcon.Text = "×"
+closeIcon.Font = Enum.Font.GothamBold
+closeIcon.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeIcon.TextSize = 18
+
+-- TextBox
+local textbox = Instance.new("TextBox", frame)
+textbox.Size = UDim2.new(1, -20, 0, 180)
+textbox.Position = UDim2.new(0, 10, 0, 40)
+textbox.Text = "-- Paste Your Script Here --"
+textbox.Font = Enum.Font.Code
+textbox.TextSize = 14
+textbox.TextColor3 = Color3.fromRGB(240, 240, 240)
+textbox.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+textbox.MultiLine = true
+textbox.ClearTextOnFocus = false
+textbox.TextWrapped = true
+textbox.TextXAlignment = Enum.TextXAlignment.Left
+textbox.TextYAlignment = Enum.TextYAlignment.Top
+textbox.BorderSizePixel = 0
+Instance.new("UICorner", textbox).CornerRadius = UDim.new(0, 8)
+
+-- Execute Button
+local executeBtn = Instance.new("TextButton", frame)
+executeBtn.Size = UDim2.new(0.5, -15, 0, 35)
+executeBtn.Position = UDim2.new(0, 10, 1, -45)
+executeBtn.Text = "🚀 Execute"
+executeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+executeBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 127)
+executeBtn.Font = Enum.Font.GothamBold
+executeBtn.TextSize = 16
+Instance.new("UICorner", executeBtn).CornerRadius = UDim.new(0, 8)
+
+-- Clear Button
+local clearBtn = Instance.new("TextButton", frame)
+clearBtn.Size = UDim2.new(0.5, -15, 0, 35)
+clearBtn.Position = UDim2.new(0.5, 5, 1, -45)
+clearBtn.Text = "🧹 Clear"
+clearBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+clearBtn.BackgroundColor3 = Color3.fromRGB(200, 80, 80)
+clearBtn.Font = Enum.Font.GothamBold
+clearBtn.TextSize = 16
+Instance.new("UICorner", clearBtn).CornerRadius = UDim.new(0, 8)
+
+-- Minimized Frame
+local minimized = Instance.new("Frame", gui)
+minimized.Size = UDim2.new(0, 50, 0, 50)
+minimized.Position = UDim2.new(0, 10, 1, -60)
+minimized.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+minimized.Visible = false
+Instance.new("UICorner", minimized).CornerRadius = UDim.new(1, 0)
+
+local restoreButton = Instance.new("ImageButton", minimized)
+restoreButton.Size = UDim2.new(1, 0, 1, 0)
+restoreButton.BackgroundTransparency = 1
+restoreButton.Image = "rbxassetid://74403105687374"
+restoreButton.ScaleType = Enum.ScaleType.Crop
+
+local restoreCorner = Instance.new("UICorner", restoreButton)
+restoreCorner.CornerRadius = UDim.new(1, 0)
+local UserInputService = game:GetService("UserInputService")
+
+local draggingMin, dragInputMin, dragStartMin, startPosMin
+minimized.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		draggingMin = true
+		dragStartMin = input.Position
+		startPosMin = minimized.Position
+
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then
+				draggingMin = false
+			end
+		end)
+	end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseMovement then
+		dragInputMin = input
+	end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+	if input == dragInputMin and draggingMin then
+		local delta = input.Position - dragStartMin
+		minimized.Position = UDim2.new(
+			startPosMin.X.Scale,
+			startPosMin.X.Offset + delta.X,
+			startPosMin.Y.Scale,
+			startPosMin.Y.Offset + delta.Y
+		)
+	end
+end)
+
+-- Dragging
+local dragging, dragInput, dragStart, startPos
+topBar.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		dragging = true
+		dragStart = input.Position
+		startPos = frame.Position
+	end
+end)
+
+topBar.InputChanged:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseMovement then
+		dragInput = input
+	end
+end)
+
+game:GetService("UserInputService").InputChanged:Connect(function(input)
+	if input == dragInput and dragging then
+		local delta = input.Position - dragStart
+		frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+	end
+end)
+
+topBar.InputEnded:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		dragging = false
+	end
+end)
+
+-- Functionality
+close.MouseButton1Click:Connect(function()
+	gui:Destroy()
+end)
+
+local TweenService = game:GetService("TweenService")
+
+local function animateHide()
+	local hideTween = TweenService:Create(frame, TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+		Position = UDim2.new(0.5, -225, 0.5, 0),
+		Size = UDim2.new(0, 450, 0, 0),
+		BackgroundTransparency = 1
+	})
+	hideTween:Play()
+	hideTween.Completed:Connect(function()
+		frame.Visible = false
+		minimized.Visible = true
+		frame.Position = UDim2.new(0.5, -225, 0.5, -150)
+		frame.Size = UDim2.new(0, 450, 0, 300)
+		frame.BackgroundTransparency = 0
+	end)
+end
+
+local function animateShow()
+	frame.Visible = true
+	frame.BackgroundTransparency = 1
+	frame.Size = UDim2.new(0, 450, 0, 0)
+	frame.Position = UDim2.new(0.5, -225, 0.5, 0)
+
+	local showTween = TweenService:Create(frame, TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+		Size = UDim2.new(0, 450, 0, 300),
+		Position = UDim2.new(0.5, -225, 0.5, -150),
+		BackgroundTransparency = 0
+	})
+	showTween:Play()
+	minimized.Visible = false
+end
+
+minimize.MouseButton1Click:Connect(animateHide)
+restoreButton.MouseButton1Click:Connect(animateShow)
+
+executeBtn.MouseButton1Click:Connect(function()
+	local success, err = pcall(function()
+		loadstring(textbox.Text)()
+	end)
+	if not success then
+		warn("Script error:", err)
+	end
+end)
+
+clearBtn.MouseButton1Click:Connect(function()
+	textbox.Text = ""
+end)
